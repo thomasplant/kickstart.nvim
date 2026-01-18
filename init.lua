@@ -87,6 +87,11 @@ P.S. You can delete this when you're done too. It's your config now! :)
 --Personal Remaps
 vim.keymap.set('i', 'kj', '<Esc>')
 
+--Tab settings
+vim.opt.expandtab = true
+vim.opt.shiftwidth = 4
+vim.opt.tabstop = 4
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -109,7 +114,6 @@ vim.o.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.o.mouse = 'a'
-
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
 
