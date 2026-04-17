@@ -84,13 +84,24 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 --
+-- Enable bytecode cache for faster startup
+vim.loader.enable()
+
 --Personal Remaps
 vim.keymap.set('i', 'kj', '<Esc>')
+vim.keymap.set('i', '<C-BS>', '<C-W>', { noremap = true, desc = 'Delete word backward' })
 
 --Tab settings
 vim.opt.expandtab = true
 vim.opt.shiftwidth = 4
 vim.opt.tabstop = 4
+
+--Line Endings (Windows-specific)
+if vim.fn.has('win32') == 1 then
+  vim.opt.fileformats = "dos"
+  vim.opt.fixendofline = false
+  vim.opt.endofline = false
+end
 
 -- Set <space> as the leader key
 -- See `:help mapleader`
@@ -207,6 +218,18 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+vim.keymap.set('n', '<C-y>', '<cmd>let @+ = expand("%:p")<CR>', { desc = 'Copy file path to clipboard' })
+
+-- Move lines with Alt+j/k (normal and visual mode, keeps selection in visual)
+vim.keymap.set('n', '<A-j>', '<cmd>m .+1<CR>==', { desc = 'Move line down' })
+vim.keymap.set('n', '<A-k>', '<cmd>m .-2<CR>==', { desc = 'Move line up' })
+vim.keymap.set('i', '<A-j>', '<Esc><cmd>m .+1<CR>==gi', { desc = 'Move line down' })
+vim.keymap.set('i', '<A-k>', '<Esc><cmd>m .-2<CR>==gi', { desc = 'Move line up' })
+vim.keymap.set('v', '<A-j>', ":m '>+1<CR>gv=gv", { desc = 'Move selection down' })
+vim.keymap.set('v', '<A-k>', ":m '<-2<CR>gv=gv", { desc = 'Move selection up' })
+
+-- Show diagnostic float for line under cursor
+vim.keymap.set('n', '<leader>d', vim.diagnostic.open_float, { desc = 'Show line [D]iagnostics' })
 
 -- NOTE: Some terminals have colliding keymaps or are not able to send distinct keycodes
 -- vim.keymap.set("n", "<C-S-h>", "<C-w>H", { desc = "Move window to the left" })
@@ -446,7 +469,9 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      vim.keymap.set('n', '<leader><leader>', function()
+        builtin.buffers { sort_mru = true, ignore_current_buffer = true }
+      end, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
       vim.keymap.set('n', '<S-h>', '<cmd>bprevious<CR>')
       vim.keymap.set('n', '<leader>bd', '<cmd>bprevious | bdelete #<CR>', { desc = '[B]uffer [D]elete' })
@@ -701,6 +726,15 @@ require('lazy').setup({
         -- ts_ls = {},
         --
 
+        eslint = {
+          settings = {
+            run = 'onSave',
+            codeActionOnSave = {
+              enable = false,
+            },
+          },
+        },
+
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -751,6 +785,19 @@ require('lazy').setup({
         },
       }
     end,
+  },
+
+  { -- TypeScript tools (faster than ts_ls, talks directly to tsserver)
+    'pmizio/typescript-tools.nvim',
+    dependencies = { 'nvim-lua/plenary.nvim', 'neovim/nvim-lspconfig' },
+    ft = { 'typescript', 'typescriptreact', 'javascript', 'javascriptreact' },
+    opts = {},
+  },
+
+  { -- C# LSP (Microsoft's Roslyn-based — replaces omnisharp)
+    'seblyng/roslyn.nvim',
+    ft = { 'cs', 'csproj', 'sln', 'slnx', 'props', 'targets' },
+    opts = {},
   },
 
   { -- Autoformat
@@ -852,7 +899,8 @@ require('lazy').setup({
         -- <c-k>: Toggle signature help
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
-        preset = 'default',
+        -- preset = 'default',
+        preset = 'enter',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -915,6 +963,21 @@ require('lazy').setup({
     end,
   },
 
+  { -- Buffer tabs at the top
+    'akinsho/bufferline.nvim',
+    version = '*',
+    dependencies = 'nvim-tree/nvim-web-devicons',
+    event = 'VimEnter',
+    opts = {
+      options = {
+        diagnostics = 'nvim_lsp',
+        offsets = {
+          { filetype = 'neo-tree', text = 'File Explorer', separator = true, text_align = 'left' },
+        },
+      },
+    },
+  },
+
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -961,7 +1024,7 @@ require('lazy').setup({
     main = 'nvim-treesitter', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'tsx', 'typescript', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -992,7 +1055,7 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   -- require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
