@@ -474,7 +474,7 @@ require('lazy').setup({
       end, { desc = '[ ] Find existing buffers' })
       vim.keymap.set('n', '<S-l>', '<cmd>bnext<CR>')
       vim.keymap.set('n', '<S-h>', '<cmd>bprevious<CR>')
-      vim.keymap.set('n', '<leader>bd', '<cmd>bprevious | bdelete #<CR>', { desc = '[B]uffer [D]elete' })
+      vim.keymap.set('n', '<leader>c', '<cmd>bprevious | bdelete #<CR>', { desc = 'Buffer Delete' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
@@ -735,6 +735,9 @@ require('lazy').setup({
           },
         },
 
+        cssls = {},
+        cssmodules_ls = {},
+
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
@@ -900,7 +903,7 @@ require('lazy').setup({
         --
         -- See :h blink-cmp-config-keymap for defining your own keymap
         -- preset = 'default',
-        preset = 'enter',
+        preset = 'super-tab',
 
         -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
         --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps
@@ -1024,7 +1027,7 @@ require('lazy').setup({
     main = 'nvim-treesitter', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'tsx', 'typescript', 'vim', 'vimdoc' },
+      ensure_installed = { 'bash', 'c', 'css', 'diff', 'html', 'javascript', 'json', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'scss', 'tsx', 'typescript', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
