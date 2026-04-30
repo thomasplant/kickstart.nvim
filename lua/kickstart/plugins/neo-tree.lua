@@ -11,15 +11,19 @@ return {
   },
   lazy = false,
   keys = {
-    { '<leader>e', ':Neotree reveal<CR>', desc = 'NeoTree reveal', silent = true },
-  },
-  opts = {
-    filesystem = {
-      window = {
-        mappings = {
-          ['<leader>e'] = 'close_window',
-        },
-      },
+    {
+      '<leader>e',
+      function()
+        for _, win in ipairs(vim.api.nvim_list_wins()) do
+          if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == 'neo-tree' then
+            vim.cmd 'Neotree close'
+            return
+          end
+        end
+        vim.cmd 'Neotree reveal'
+      end,
+      desc = 'NeoTree toggle/reveal',
     },
   },
+  opts = {},
 }
